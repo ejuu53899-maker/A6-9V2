@@ -1,11 +1,11 @@
 # Knowledge Base
 - **NotebookLM**: [Access here](https://notebooklm.google.com/notebook/e8f4c29d-9aec-4d5f-8f51-2ca168687616)
 
-# GenX FX Trading System
+# GenX FX Trading System [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-## 📋 Description
+> A sophisticated trading automation framework integrating MQL5 Expert Advisors with Python for advanced analytics and execution.
 
-A sophisticated trading automation framework integrating MQL5 Expert Advisors with Python for advanced analytics and execution.
+The GenX FX Trading System is a curated collection of tools and scripts designed for traders who want to combine the power of MetaTrader 5 with the flexibility of Python-based data processing and signal generation.
 
 ## 🚀 Quick Start (V4)
 
@@ -102,7 +102,9 @@ Follow project-specific style guidelines
 
 ## 📄 License
 
-See LICENSE file for details.
+[![CC0](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/cc-zero.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
+
+This project is licensed under the [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) (Public Domain Dedication).
 
 ## 👥 Authors
 
