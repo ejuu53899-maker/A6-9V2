@@ -87,6 +87,13 @@ The Python bridge now acts as a command center for the EA.
 3. **View Outputs:**
    Check the `signal_output/` directory for the latest Excel dashboard and MT4/MT5 CSV signals.
 
+### **Active Trading Session Entry**
+
+To connect a remote MetaTrader 5 terminal to an active bridge session:
+1. Ensure your firewall allows inbound connections on the configured bridge port (default: 8000).
+2. In your MT5 Expert Advisor, set `BridgeURL` to the public IP or hostname of the bridge server (e.g., `http://your-server-ip:8000`).
+3. Ensure the `JULES_API_KEY_V4` and `GITHUB_TOKEN_PUSH` in MT5 match the session tokens.
+
 ## 🧪 Testing
 
 ```bash
