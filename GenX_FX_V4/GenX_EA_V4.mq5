@@ -10,6 +10,7 @@
 
 //--- input parameters
 input string   JULES_API_KEY_V4 = "YOUR_API_KEY_HERE"; // API Key for authentication
+input string   GITHUB_TOKEN_PUSH = "YOUR_GITHUB_TOKEN_HERE"; // GitHub Token for push operations
 input double   TargetProfit      = 100.0;              // Target Profit in points
 input double   StopLoss          = 50.0;               // Stop Loss in points
 input double   LotSize           = 0.1;                // Trading Lot Size
@@ -28,7 +29,15 @@ int OnInit()
       return(INIT_PARAMETERS_INCORRECT);
    }
 
-   Print("API Key V4 validated. Ready to start.");
+   if(GITHUB_TOKEN_PUSH == "YOUR_GITHUB_TOKEN_HERE" || GITHUB_TOKEN_PUSH == "")
+   {
+      Print("Error: GITHUB_TOKEN_PUSH is not set correctly.");
+      return(INIT_PARAMETERS_INCORRECT);
+   }
+
+   Print("Security tokens validated. Ready to start.");
+   Print("Configuration: LotSize=", LotSize, " TP=", TargetProfit, " SL=", StopLoss);
+
    return(INIT_SUCCEEDED);
 }
 
@@ -54,7 +63,15 @@ void OnTick()
    if(tick_count % 100 == 0)
    {
       Print("Current Tick - Symbol: ", _Symbol, " Bid: ", bid, " Ask: ", ask);
-      string data = "{\"symbol\":\"" + _Symbol + "\", \"bid\":" + DoubleToString(bid, _Digits) + ", \"ask\":" + DoubleToString(ask, _Digits) + "}";
+
+      // Constructing JSON data including user parameters
+      string data = "{\"symbol\":\"" + _Symbol + "\", " +
+                    "\"bid\":" + DoubleToString(bid, _Digits) + ", " +
+                    "\"ask\":" + DoubleToString(ask, _Digits) + ", " +
+                    "\"lot_size\":" + DoubleToString(LotSize, 2) + ", " +
+                    "\"tp\":" + DoubleToString(TargetProfit, 1) + ", " +
+                    "\"sl\":" + DoubleToString(StopLoss, 1) + "}";
+
       SendDataToBridge(data);
    }
 }
@@ -67,9 +84,12 @@ bool SendDataToBridge(string data)
    char post_data[];
    char result[];
    string result_headers;
-   string headers = "Content-Type: application/json\r\nAuthorization: Bearer " + JULES_API_KEY_V4 + "\r\n";
+   string headers = "Content-Type: application/json\r\n" +
+                    "Authorization: Bearer " + JULES_API_KEY_V4 + "\r\n" +
+                    "X-GitHub-Token: " + GITHUB_TOKEN_PUSH + "\r\n";
 
-   StringToCharArray(data, post_data, 0, WHOLE_ARRAY, CP_UTF8);
+   // Using StringLen(data) to exclude the null terminator as per code review feedback
+   StringToCharArray(data, post_data, 0, StringLen(data), CP_UTF8);
 
    int res = WebRequest("POST", BridgeURL, headers, 5000, post_data, result, result_headers);
 

@@ -11,12 +11,23 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
+
+        # Authentication headers
         auth_header = self.headers.get('Authorization', '')
+        github_header = self.headers.get('X-GitHub-Token', '')
 
         if not self.validate_auth(auth_header):
+            logging.warning("Unauthorized: JULES_API_KEY_V4 mismatch.")
             self.send_response(401)
             self.end_headers()
-            self.wfile.write(b'Unauthorized')
+            self.wfile.write(b'Unauthorized: Invalid JULES_API_KEY_V4')
+            return
+
+        if not self.validate_github_token(github_header):
+            logging.warning("Unauthorized: GITHUB_TOKEN_PUSH mismatch.")
+            self.send_response(401)
+            self.end_headers()
+            self.wfile.write(b'Unauthorized: Invalid GITHUB_TOKEN_PUSH')
             return
 
         try:
@@ -36,32 +47,39 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
         expected_key = f"Bearer {os.environ.get('JULES_API_KEY_V4', 'JULES_API_KEY_V4_PLACEHOLDER')}"
         return auth_header == expected_key
 
-def validate_api_key(api_key):
+    def validate_github_token(self, github_header):
+        expected_github_token = os.environ.get('GITHUB_TOKEN_PUSH', 'GITHUB_TOKEN_PUSH_PLACEHOLDER')
+        return github_header == expected_github_token
+
+def validate_tokens(jules_key, github_token):
     """
-    Simulates API key validation for JULES_API_KEY_V4.
+    Simulates token validation for startup.
     """
-    if not api_key:
-        logging.error("API Key not found.")
+    if not jules_key:
+        logging.error("JULES_API_KEY_V4 not found in environment.")
         return False
 
-    if api_key.startswith("JULES_API_KEY_V4_") or api_key == "TEST_KEY":
-        logging.info(f"API Key {api_key[:10]}... validated successfully.")
-        return True
-    else:
-        logging.warning(f"Invalid API Key format: {api_key}")
+    if not github_token:
+        logging.error("GITHUB_TOKEN_PUSH not found in environment.")
         return False
 
-def start_bridge(api_key, port=8000):
+    logging.info("Startup tokens detected.")
+    return True
+
+def start_bridge(port=8000):
     """
     Starts the bridge and begins listening for data from the MQL5 EA.
     """
-    if not validate_api_key(api_key):
-        logging.critical("Bridge could not start due to invalid API Key.")
+    jules_key = os.environ.get("JULES_API_KEY_V4")
+    github_token = os.environ.get("GITHUB_TOKEN_PUSH")
+
+    if not validate_tokens(jules_key, github_token):
+        logging.critical("Bridge could not start due to missing environment tokens.")
         sys.exit(1)
 
     server_address = ('', port)
     httpd = HTTPServer(server_address, TradeRequestHandler)
-    logging.info(f"GenX Python Bridge V4 starting up on port {port}...")
+    logging.info(f"GenX Python Bridge V4 (Secure) starting up on port {port}...")
 
     try:
         httpd.serve_forever()
@@ -70,11 +88,4 @@ def start_bridge(api_key, port=8000):
         httpd.server_close()
 
 if __name__ == "__main__":
-    # Get API key from environment or default for testing
-    api_key_v4 = os.environ.get("JULES_API_KEY_V4", "JULES_API_KEY_V4_PLACEHOLDER")
-
-    # Handle command line arguments for override
-    if len(sys.argv) > 1:
-        api_key_v4 = sys.argv[1]
-
-    start_bridge(api_key_v4)
+    start_bridge()
