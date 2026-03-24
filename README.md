@@ -96,9 +96,18 @@ To connect a remote MetaTrader 5 terminal to an active bridge session:
 
 ## 🧪 Testing
 
-```bash
-# Run tests based on project type
-```
+The project includes a suite of automated tests to ensure bridge functionality and security.
+- **Python Bridge Syntax Check:** `python3 -m py_compile GenX_FX_V4/bridge.py`
+- **Integration Test:** Verified via GitHub Actions using mock authentication tokens.
+
+## 🚀 CI/CD & Deployment
+
+The system is equipped with a GitHub Actions pipeline (`.github/workflows/ci-cd.yml`) that automates:
+1. **Linting:** Checks Python code quality using Flake8.
+2. **Testing:** Runs syntax and integration tests in a virtual environment.
+3. **Security:** Performs filesystem vulnerability scans using Trivy.
+4. **Building:** Packages the EA and Bridge into a versioned `.tar.gz` artifact.
+5. **Deployment:** Automatically deploys to the `development` environment on every push to `main`. Production deployment is available via manual `workflow_dispatch`.
 
 ## 🏗️ Building
 
