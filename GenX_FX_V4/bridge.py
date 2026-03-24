@@ -8,7 +8,25 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Global Operation State for Remote Control
+operation_state = {
+    "status": "START",  # Possible: START, STOP, PAUSE
+    "last_command_time": datetime.now().isoformat(),
+    "command_source": "system"
+}
+
 class TradeRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        # Handle remote status checks (e.g., from EA)
+        if self.path == '/remote/status':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(operation_state).encode('utf-8'))
+        else:
+            self.send_response(404)
+            self.end_headers()
+
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
@@ -34,8 +52,10 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
         try:
             data = json.loads(post_data.decode('utf-8'))
 
-            # Handle different endpoints
-            if self.path == '/performance/update':
+            # Route requests
+            if self.path == '/remote/control':
+                self.handle_remote_control(data)
+            elif self.path == '/performance/update':
                 self.handle_performance_update(data)
             else:
                 self.handle_trade_data(data)
@@ -43,7 +63,7 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            response = {"status": "success", "received": data, "timestamp": datetime.now().isoformat()}
+            response = {"status": "success", "operation_status": operation_state["status"], "timestamp": datetime.now().isoformat()}
             self.wfile.write(json.dumps(response).encode('utf-8'))
         except json.JSONDecodeError:
             self.send_response(400)
@@ -56,6 +76,17 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
     def handle_performance_update(self, data):
         logging.info(f"📈 Performance Update - Account: {data.get('account')}, Balance: {data.get('balance')}, Equity: {data.get('equity')}, PnL: {data.get('pnl')}")
 
+    def handle_remote_control(self, data):
+        global operation_state
+        new_status = data.get('command', '').upper()
+        if new_status in ["START", "STOP", "PAUSE"]:
+            operation_state["status"] = new_status
+            operation_state["last_command_time"] = datetime.now().isoformat()
+            operation_state["command_source"] = data.get('source', 'remote_control')
+            logging.info(f"🚀 REMOTE CONTROL - New Status: {new_status} (Source: {operation_state['command_source']})")
+        else:
+            logging.warning(f"Invalid Remote Control command: {new_status}")
+
     def validate_auth(self, auth_header):
         expected_key = f"Bearer {os.environ.get('JULES_API_KEY_V4', 'JULES_API_KEY_V4_PLACEHOLDER')}"
         return auth_header == expected_key
@@ -64,27 +95,17 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
         expected_github_token = os.environ.get('GITHUB_TOKEN_PUSH', 'GITHUB_TOKEN_PUSH_PLACEHOLDER')
         return github_header == expected_github_token
 
-def validate_tokens(jules_key, github_token):
-    if not jules_key:
-        logging.error("JULES_API_KEY_V4 not found in environment.")
-        return False
-    if not github_token:
-        logging.error("GITHUB_TOKEN_PUSH not found in environment.")
-        return False
-    logging.info("Startup tokens detected.")
-    return True
-
 def start_bridge(port=8000):
     jules_key = os.environ.get("JULES_API_KEY_V4")
     github_token = os.environ.get("GITHUB_TOKEN_PUSH")
 
-    if not validate_tokens(jules_key, github_token):
-        logging.critical("Bridge could not start due to missing environment tokens.")
+    if not jules_key or not github_token:
+        logging.critical("Missing JULES_API_KEY_V4 or GITHUB_TOKEN_PUSH.")
         sys.exit(1)
 
     server_address = ('', port)
     httpd = HTTPServer(server_address, TradeRequestHandler)
-    logging.info(f"GenX Python Bridge V4 (Secure + Performance) starting up on port {port}...")
+    logging.info(f"GenX Python Bridge V4 (Secure + Performance + Remote Control) starting on port {port}...")
 
     try:
         httpd.serve_forever()

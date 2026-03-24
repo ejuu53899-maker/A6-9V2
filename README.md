@@ -16,6 +16,13 @@ The GenX FX Trading System is a curated collection of tools and scripts designed
 - `JULES_API_KEY_V4` (obtained from your dashboard)
 - `GITHUB_TOKEN_PUSH` (for secure synchronization)
 
+### Secret Environment Setup
+
+For enhanced security, you can use an environment file to manage your keys.
+1. Copy `GenX_FX_V4/.env.example` to `GenX_FX_V4/.env`.
+2. Fill in your `JULES_API_KEY_V4` and `GITHUB_TOKEN_PUSH`.
+3. The `startup.sh` script will automatically prioritize these variables.
+
 ### Installation
 
 1. Clone this repository to your local machine.
@@ -58,6 +65,13 @@ Version 4 now tracks account performance metrics (balance, equity, pnl) and tran
 - **Endpoint:** `/performance/update`
 - **Data:** Account number, balance, equity, and unrealized profit/loss.
 - **Frequency:** Sent on initialization and every 500 ticks.
+
+### **Remote Control Capabilities**
+
+The Python bridge now acts as a command center for the EA.
+- **POST `/remote/control`:** Send commands (`START`, `STOP`, `PAUSE`) to the bridge.
+- **GET `/remote/status`:** The EA periodically checks this endpoint to sync its operational state.
+- **State Persistence:** The bridge maintains the current status, allowing for remote intervention without restarting the EA.
 
 ### **Getting Started with Signals**
 

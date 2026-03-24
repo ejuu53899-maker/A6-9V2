@@ -16,6 +16,10 @@ input double   StopLoss          = 50.0;               // Stop Loss in points
 input double   LotSize           = 0.1;                // Trading Lot Size
 input string   BridgeURL         = "http://localhost:8000"; // Bridge Server URL
 
+//--- global variables for remote control state
+enum ENUM_OP_STATUS { OP_START, OP_STOP, OP_PAUSE };
+ENUM_OP_STATUS CurrentOperationStatus = OP_START;
+
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -35,8 +39,11 @@ int OnInit()
       return(INIT_PARAMETERS_INCORRECT);
    }
 
-   Print("Security tokens validated. Ready to start.");
+   Print("Security tokens validated. Initializing with START status.");
    Print("Configuration: LotSize=", LotSize, " TP=", TargetProfit, " SL=", StopLoss);
+
+   // Sync with bridge for initial remote status
+   UpdateRemoteStatus();
 
    // Send initial performance update
    SendPerformanceUpdate();
@@ -57,12 +64,33 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
 {
+   // Periodically sync remote status (every 1000 ticks)
+   static int tick_count = 0;
+   tick_count++;
+
+   if(tick_count % 1000 == 0)
+   {
+      UpdateRemoteStatus();
+   }
+
+   // Respect Remote Control Status
+   if(CurrentOperationStatus == OP_STOP)
+   {
+      return; // Do nothing if STOPPED
+   }
+
+   if(CurrentOperationStatus == OP_PAUSE)
+   {
+      // Optional: Logic for paused state (e.g., monitor only)
+      static bool pause_logged = false;
+      if(!pause_logged) { Print("Trading is currently PAUSED via Remote Control."); pause_logged = true; }
+      return;
+   }
+
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
-   // Print every 100th tick and send data to bridge
-   static int tick_count = 0;
-   tick_count++;
+   // Normal trading data transmission every 100 ticks
    if(tick_count % 100 == 0)
    {
       Print("Current Tick - Symbol: ", _Symbol, " Bid: ", bid, " Ask: ", ask);
@@ -81,6 +109,31 @@ void OnTick()
    if(tick_count % 500 == 0)
    {
       SendPerformanceUpdate();
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Function to fetch status from remote control bridge              |
+//+------------------------------------------------------------------+
+void UpdateRemoteStatus()
+{
+   char result[];
+   string result_headers;
+   string headers = "Authorization: Bearer " + JULES_API_KEY_V4 + "\r\n"; // Added auth for consistency
+
+   int res = WebRequest("GET", BridgeURL + "/remote/status", headers, 5000, result, result, result_headers);
+
+   if(res == 200)
+   {
+      string response = CharArrayToString(result, 0, WHOLE_ARRAY, CP_UTF8);
+      // Simple parsing (since we don't have a JSON parser natively in simple MQ5 without libs)
+      if(StringFind(response, "\"status\": \"STOP\"") >= 0) { CurrentOperationStatus = OP_STOP; Print("Remote Status: STOP"); }
+      else if(StringFind(response, "\"status\": \"PAUSE\"") >= 0) { CurrentOperationStatus = OP_PAUSE; Print("Remote Status: PAUSE"); }
+      else { CurrentOperationStatus = OP_START; Print("Remote Status: START"); }
+   }
+   else
+   {
+      Print("Failed to fetch remote status. Error: ", res);
    }
 }
 
@@ -125,7 +178,6 @@ bool SendDataToBridge(string data, string endpoint)
    }
    else if(res == 200)
    {
-      Print("Data successfully sent to bridge endpoint: ", endpoint);
       return true;
    }
    else
