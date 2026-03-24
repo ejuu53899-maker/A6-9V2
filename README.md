@@ -42,9 +42,29 @@ GenX_FX/
 │   ├── bridge.py            # Python Bridge (HTTP Server)
 │   ├── startup.sh           # Easy Startup Script
 │   └── requirements.txt     # Python Dependencies
+├── Indexing-Workflow-controller/ # 🚀 Automated Signal Generation & Workflow Controller
+├── signal_output/          # 📈 Generated Trading Signals (Excel, CSV, JSON)
 ├── README.md
 └── ...
 ```
+
+## 🚀 Indexing Workflow Integration (V4)
+
+The system now features automated signal generation and an Excel-based dashboard for advanced trading operations.
+
+### **Getting Started with Signals**
+
+1. **Setup Environment:**
+   ```bash
+   pip install openpyxl pandas
+   ```
+2. **Generate Signals:**
+   ```bash
+   export PYTHONPATH=$PYTHONPATH:$(pwd)/Indexing-Workflow-controller/scripts/utils
+   python3 Indexing-Workflow-controller/scripts/utils/demo_excel_generator.py
+   ```
+3. **View Outputs:**
+   Check the `signal_output/` directory for the latest Excel dashboard and MT4/MT5 CSV signals.
 
 ## 🧪 Testing
 
