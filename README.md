@@ -14,6 +14,7 @@ A sophisticated trading automation framework integrating MQL5 Expert Advisors wi
 - MetaTrader 5 (MT5) installed
 - Python 3.8+
 - `JULES_API_KEY_V4` (obtained from your dashboard)
+- `GITHUB_TOKEN_PUSH` (for secure synchronization)
 
 ### Installation
 
@@ -26,11 +27,10 @@ A sophisticated trading automation framework integrating MQL5 Expert Advisors wi
 
 ### Running
 
-1. Compile and attach the EA in MT5, providing your `JULES_API_KEY_V4`.
-2. Start the Python bridge:
+1. Compile and attach the EA in MT5, providing both `JULES_API_KEY_V4` and `GITHUB_TOKEN_PUSH`.
+2. Start the Python bridge using the startup script:
    ```bash
-   export JULES_API_KEY_V4="your_api_key_here"
-   python GenX_FX_V4/bridge.py
+   ./GenX_FX_V4/startup.sh "your_api_key_here" "your_github_token_here"
    ```
 
 ## 📁 Project Structure
@@ -40,6 +40,7 @@ GenX_FX/
 ├── GenX_FX_V4/
 │   ├── GenX_EA_V4.mq5       # MQL5 Expert Advisor
 │   ├── bridge.py            # Python Bridge (HTTP Server)
+│   ├── startup.sh           # Easy Startup Script
 │   └── requirements.txt     # Python Dependencies
 ├── README.md
 └── ...
