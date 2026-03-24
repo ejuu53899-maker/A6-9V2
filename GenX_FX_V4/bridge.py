@@ -2,6 +2,7 @@ import os
 import logging
 import sys
 import json
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Configure logging
@@ -32,16 +33,28 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
 
         try:
             data = json.loads(post_data.decode('utf-8'))
-            logging.info(f"Received trade data: {data}")
+
+            # Handle different endpoints
+            if self.path == '/performance/update':
+                self.handle_performance_update(data)
+            else:
+                self.handle_trade_data(data)
+
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            response = {"status": "success", "received": data}
+            response = {"status": "success", "received": data, "timestamp": datetime.now().isoformat()}
             self.wfile.write(json.dumps(response).encode('utf-8'))
         except json.JSONDecodeError:
             self.send_response(400)
             self.end_headers()
             self.wfile.write(b'Invalid JSON')
+
+    def handle_trade_data(self, data):
+        logging.info(f"Received trade data: {data}")
+
+    def handle_performance_update(self, data):
+        logging.info(f"📈 Performance Update - Account: {data.get('account')}, Balance: {data.get('balance')}, Equity: {data.get('equity')}, PnL: {data.get('pnl')}")
 
     def validate_auth(self, auth_header):
         expected_key = f"Bearer {os.environ.get('JULES_API_KEY_V4', 'JULES_API_KEY_V4_PLACEHOLDER')}"
@@ -52,24 +65,16 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
         return github_header == expected_github_token
 
 def validate_tokens(jules_key, github_token):
-    """
-    Simulates token validation for startup.
-    """
     if not jules_key:
         logging.error("JULES_API_KEY_V4 not found in environment.")
         return False
-
     if not github_token:
         logging.error("GITHUB_TOKEN_PUSH not found in environment.")
         return False
-
     logging.info("Startup tokens detected.")
     return True
 
 def start_bridge(port=8000):
-    """
-    Starts the bridge and begins listening for data from the MQL5 EA.
-    """
     jules_key = os.environ.get("JULES_API_KEY_V4")
     github_token = os.environ.get("GITHUB_TOKEN_PUSH")
 
@@ -79,7 +84,7 @@ def start_bridge(port=8000):
 
     server_address = ('', port)
     httpd = HTTPServer(server_address, TradeRequestHandler)
-    logging.info(f"GenX Python Bridge V4 (Secure) starting up on port {port}...")
+    logging.info(f"GenX Python Bridge V4 (Secure + Performance) starting up on port {port}...")
 
     try:
         httpd.serve_forever()

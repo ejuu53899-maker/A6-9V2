@@ -38,6 +38,9 @@ int OnInit()
    Print("Security tokens validated. Ready to start.");
    Print("Configuration: LotSize=", LotSize, " TP=", TargetProfit, " SL=", StopLoss);
 
+   // Send initial performance update
+   SendPerformanceUpdate();
+
    return(INIT_SUCCEEDED);
 }
 
@@ -57,14 +60,13 @@ void OnTick()
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
-   // Print every 100th tick and send data to bridge for demo purposes
+   // Print every 100th tick and send data to bridge
    static int tick_count = 0;
    tick_count++;
    if(tick_count % 100 == 0)
    {
       Print("Current Tick - Symbol: ", _Symbol, " Bid: ", bid, " Ask: ", ask);
 
-      // Constructing JSON data including user parameters
       string data = "{\"symbol\":\"" + _Symbol + "\", " +
                     "\"bid\":" + DoubleToString(bid, _Digits) + ", " +
                     "\"ask\":" + DoubleToString(ask, _Digits) + ", " +
@@ -72,14 +74,38 @@ void OnTick()
                     "\"tp\":" + DoubleToString(TargetProfit, 1) + ", " +
                     "\"sl\":" + DoubleToString(StopLoss, 1) + "}";
 
-      SendDataToBridge(data);
+      SendDataToBridge(data, "/trade");
    }
+
+   // Send performance update every 500 ticks
+   if(tick_count % 500 == 0)
+   {
+      SendPerformanceUpdate();
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Function to send account performance update                      |
+//+------------------------------------------------------------------+
+void SendPerformanceUpdate()
+{
+   double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double pnl = AccountInfoDouble(ACCOUNT_PROFIT);
+   long account = AccountInfoInteger(ACCOUNT_LOGIN);
+
+   string data = "{\"account\":" + IntegerToString(account) + ", " +
+                 "\"balance\":" + DoubleToString(balance, 2) + ", " +
+                 "\"equity\":" + DoubleToString(equity, 2) + ", " +
+                 "\"pnl\":" + DoubleToString(pnl, 2) + "}";
+
+   SendDataToBridge(data, "/performance/update");
 }
 
 //+------------------------------------------------------------------+
 //| Custom function to send data to Python bridge                    |
 //+------------------------------------------------------------------+
-bool SendDataToBridge(string data)
+bool SendDataToBridge(string data, string endpoint)
 {
    char post_data[];
    char result[];
@@ -88,24 +114,23 @@ bool SendDataToBridge(string data)
                     "Authorization: Bearer " + JULES_API_KEY_V4 + "\r\n" +
                     "X-GitHub-Token: " + GITHUB_TOKEN_PUSH + "\r\n";
 
-   // Using StringLen(data) to exclude the null terminator as per code review feedback
    StringToCharArray(data, post_data, 0, StringLen(data), CP_UTF8);
 
-   int res = WebRequest("POST", BridgeURL, headers, 5000, post_data, result, result_headers);
+   int res = WebRequest("POST", BridgeURL + endpoint, headers, 5000, post_data, result, result_headers);
 
    if(res == -1)
    {
-      Print("Error in WebRequest: ", GetLastError());
+      Print("Error in WebRequest to ", endpoint, ": ", GetLastError());
       return false;
    }
    else if(res == 200)
    {
-      Print("Data successfully sent to bridge.");
+      Print("Data successfully sent to bridge endpoint: ", endpoint);
       return true;
    }
    else
    {
-      Print("Bridge returned error code: ", res);
+      Print("Bridge (", endpoint, ") returned error code: ", res);
       return false;
    }
 }

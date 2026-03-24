@@ -50,7 +50,14 @@ GenX_FX/
 
 ## 🚀 Indexing Workflow Integration (V4)
 
-The system now features automated signal generation and an Excel-based dashboard for advanced trading operations.
+The system now features automated signal generation, an Excel-based dashboard, and **real-time performance monitoring**.
+
+### **Real-Time Performance Monitoring**
+
+Version 4 now tracks account performance metrics (balance, equity, pnl) and transmits them to the Python bridge for processing.
+- **Endpoint:** `/performance/update`
+- **Data:** Account number, balance, equity, and unrealized profit/loss.
+- **Frequency:** Sent on initialization and every 500 ticks.
 
 ### **Getting Started with Signals**
 
