@@ -1,38 +1,46 @@
 # Knowledge Base
 - **NotebookLM**: [Access here](https://notebooklm.google.com/notebook/e8f4c29d-9aec-4d5f-8f51-2ca168687616)
 
-# A6-9V
+# GenX FX Trading System
 
 ## 📋 Description
 
-A unknown project.
+A sophisticated trading automation framework integrating MQL5 Expert Advisors with Python for advanced analytics and execution.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (V4)
 
 ### Prerequisites
 
-- See project-specific requirements
+- MetaTrader 5 (MT5) installed
+- Python 3.8+
+- `JULES_API_KEY_V4` (obtained from your dashboard)
 
 ### Installation
 
-```bash
-# Install dependencies based on project type
-```
+1. Clone this repository to your local machine.
+2. Copy `GenX_FX_V4/GenX_EA_V4.mq5` to your MT5 `MQL5/Experts` folder.
+3. Install Python dependencies:
+   ```bash
+   pip install -r GenX_FX_V4/requirements.txt
+   ```
 
 ### Running
 
-```bash
-# Run based on project type
-```
+1. Compile and attach the EA in MT5, providing your `JULES_API_KEY_V4`.
+2. Start the Python bridge:
+   ```bash
+   export JULES_API_KEY_V4="your_api_key_here"
+   python GenX_FX_V4/bridge.py
+   ```
 
 ## 📁 Project Structure
 
 ```
-A6-9V/
-
-
-
-
+GenX_FX/
+├── GenX_FX_V4/
+│   ├── GenX_EA_V4.mq5       # MQL5 Expert Advisor
+│   ├── bridge.py            # Python Bridge (HTTP Server)
+│   └── requirements.txt     # Python Dependencies
 ├── README.md
 └── ...
 ```
