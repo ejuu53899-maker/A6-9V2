@@ -94,6 +94,22 @@ To connect a remote MetaTrader 5 terminal to an active bridge session:
 2. In your MT5 Expert Advisor, set `BridgeURL` to the public IP or hostname of the bridge server (e.g., `http://your-server-ip:8000`).
 3. Ensure the `JULES_API_KEY_V4` and `GITHUB_TOKEN_PUSH` in MT5 match the session tokens.
 
+## 📈 Path to Real Performance
+
+Version 4 is now equipped with live analytics and insight reporting to drive real-world trading performance.
+
+### **Live Market Analysis**
+The Python bridge automatically calculates technical indicators for every symbol it receives:
+- **SMA-14:** Simple Moving Average to identify trend direction.
+- **RSI-14:** Relative Strength Index to identify overbought (>70) or oversold (<30) conditions.
+- **Insight Reporting:** The bridge returns these metrics to the EA, which logs them directly in the MT5 Experts tab.
+
+### **Achieving "Real Start"**
+To transition from demo to live performance:
+1. **Connect Real Data:** Replace the EA's data feed with a live broker account.
+2. **Refine Logic:** Update `bridge.py` with custom machine learning models or ensemble indicators.
+3. **Monitor PnL:** Use the `/performance/update` endpoint to track real-time equity growth.
+
 ## 🧪 Testing
 
 The project includes a suite of automated tests to ensure bridge functionality and security.

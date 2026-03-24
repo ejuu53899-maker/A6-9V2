@@ -25,7 +25,11 @@ ENUM_OP_STATUS CurrentOperationStatus = OP_START;
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   Print("GenX EA V4 Initializing...");
+   Print("----------------------------------------------------------");
+   Print("🚀 GenX EA V4 - REAL START");
+   Print("Server Time: ", TimeToString(TimeCurrent(), TIME_DATE|TIME_SECONDS));
+   Print("MT5 Build: ", TerminalInfoInteger(TERMINAL_BUILD));
+   Print("----------------------------------------------------------");
 
    if(JULES_API_KEY_V4 == "YOUR_API_KEY_HERE" || JULES_API_KEY_V4 == "")
    {
@@ -40,7 +44,6 @@ int OnInit()
    }
 
    Print("Security tokens validated. Initializing with START status.");
-   Print("Configuration: LotSize=", LotSize, " TP=", TargetProfit, " SL=", StopLoss);
 
    // Sync with bridge for initial remote status
    UpdateRemoteStatus();
@@ -64,7 +67,6 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
 {
-   // Periodically sync remote status (every 1000 ticks)
    static int tick_count = 0;
    tick_count++;
 
@@ -73,15 +75,10 @@ void OnTick()
       UpdateRemoteStatus();
    }
 
-   // Respect Remote Control Status
-   if(CurrentOperationStatus == OP_STOP)
-   {
-      return; // Do nothing if STOPPED
-   }
+   if(CurrentOperationStatus == OP_STOP) return;
 
    if(CurrentOperationStatus == OP_PAUSE)
    {
-      // Optional: Logic for paused state (e.g., monitor only)
       static bool pause_logged = false;
       if(!pause_logged) { Print("Trading is currently PAUSED via Remote Control."); pause_logged = true; }
       return;
@@ -90,11 +87,8 @@ void OnTick()
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
-   // Normal trading data transmission every 100 ticks
    if(tick_count % 100 == 0)
    {
-      Print("Current Tick - Symbol: ", _Symbol, " Bid: ", bid, " Ask: ", ask);
-
       string data = "{\"symbol\":\"" + _Symbol + "\", " +
                     "\"bid\":" + DoubleToString(bid, _Digits) + ", " +
                     "\"ask\":" + DoubleToString(ask, _Digits) + ", " +
@@ -105,7 +99,6 @@ void OnTick()
       SendDataToBridge(data, "/trade");
    }
 
-   // Send performance update every 500 ticks
    if(tick_count % 500 == 0)
    {
       SendPerformanceUpdate();
@@ -119,21 +112,16 @@ void UpdateRemoteStatus()
 {
    char result[];
    string result_headers;
-   string headers = "Authorization: Bearer " + JULES_API_KEY_V4 + "\r\n"; // Added auth for consistency
+   string headers = "Authorization: Bearer " + JULES_API_KEY_V4 + "\r\n";
 
    int res = WebRequest("GET", BridgeURL + "/remote/status", headers, 5000, result, result, result_headers);
 
    if(res == 200)
    {
       string response = CharArrayToString(result, 0, WHOLE_ARRAY, CP_UTF8);
-      // Simple parsing (since we don't have a JSON parser natively in simple MQ5 without libs)
-      if(StringFind(response, "\"status\": \"STOP\"") >= 0) { CurrentOperationStatus = OP_STOP; Print("Remote Status: STOP"); }
-      else if(StringFind(response, "\"status\": \"PAUSE\"") >= 0) { CurrentOperationStatus = OP_PAUSE; Print("Remote Status: PAUSE"); }
-      else { CurrentOperationStatus = OP_START; Print("Remote Status: START"); }
-   }
-   else
-   {
-      Print("Failed to fetch remote status. Error: ", res);
+      if(StringFind(response, "\"status\": \"STOP\"") >= 0) { CurrentOperationStatus = OP_STOP; }
+      else if(StringFind(response, "\"status\": \"PAUSE\"") >= 0) { CurrentOperationStatus = OP_PAUSE; }
+      else { CurrentOperationStatus = OP_START; }
    }
 }
 
@@ -171,18 +159,15 @@ bool SendDataToBridge(string data, string endpoint)
 
    int res = WebRequest("POST", BridgeURL + endpoint, headers, 5000, post_data, result, result_headers);
 
-   if(res == -1)
+   if(res == 200)
    {
-      Print("Error in WebRequest to ", endpoint, ": ", GetLastError());
-      return false;
-   }
-   else if(res == 200)
-   {
+      string response = CharArrayToString(result, 0, WHOLE_ARRAY, CP_UTF8);
+      if(endpoint == "/trade")
+      {
+         Print("Bridge Response (Insights): ", response);
+      }
       return true;
    }
-   else
-   {
-      Print("Bridge (", endpoint, ") returned error code: ", res);
-      return false;
-   }
+
+   return false;
 }
