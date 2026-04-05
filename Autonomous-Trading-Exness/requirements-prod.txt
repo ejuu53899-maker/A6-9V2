@@ -1,0 +1,48 @@
+# Production Requirements for GenX Trading Platform
+# Optimized for Cloud Run deployment
+
+# Core ML and Data Science (production versions)
+numpy>=1.26.4
+pandas>=2.0.3
+scikit-learn>=1.3.2
+xgboost>=2.0.0
+lightgbm>=4.0.0
+
+# Technical Analysis and Financial Data
+ta-lib>=0.4.0
+yfinance>=0.2.0
+
+# Essential Libraries
+joblib>=1.3.0
+scipy>=1.11.0
+matplotlib>=3.7.0
+aiohttp>=3.9.0
+aiofiles>=23.2.0
+
+# Configuration and Utilities
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+cryptography>=41.0.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+click>=8.1.0
+
+# Async and Concurrency
+uvloop>=0.19.0; sys_platform != "win32"
+
+# Logging and Monitoring
+loguru>=0.7.0
+psutil>=5.9.0
+
+# API and WebSocket Support
+websockets>=12.0
+requests>=2.31.0
+httpx>=0.25.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+
+# Time Series Analysis (essential only)
+statsmodels>=0.14.0
+
+# Web server for health checks
+gunicorn>=21.0.0

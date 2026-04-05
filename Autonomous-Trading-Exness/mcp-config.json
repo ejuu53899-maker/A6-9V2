@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "google-sheets": { "command": "node", "args": ["src/google-sheets.js"] },
+    "onenote": { "command": "node", "args": ["src/onenote.js"] },
+    "google-notebook-llm": { "command": "node", "args": ["src/notebook-llm.js"] },
+    "google-keep": { "command": "node", "args": ["src/google-keep.js"] }
+  }
+}

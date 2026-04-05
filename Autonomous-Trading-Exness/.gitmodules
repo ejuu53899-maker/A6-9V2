@@ -1,0 +1,3 @@
+[submodule "plugins/pentagi"]
+	path = plugins/pentagi
+	url = https://github.com/ejuu53899-maker/pentagi

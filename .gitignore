@@ -46,3 +46,13 @@ htmlcov/
 *.dll
 *.so
 *.dylib
+
+# Subproject overrides
+Autonomous-Trading-Exness/node_modules/
+Autonomous-Trading-Exness/services/server/node_modules/
+Autonomous-Trading-Exness/dist/
+Autonomous-Trading-Exness/services/server/dist/
+Autonomous-Trading-Exness/venv/
+Autonomous-Trading-Exness/.env
+Autonomous-Trading-Exness/*.log
+Autonomous-Trading-Exness/plugins/pentagi/node_modules/
