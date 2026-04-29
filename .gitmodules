@@ -1,0 +1,3 @@
+[submodule "forgejo_setup"]
+	path = forgejo_setup
+	url = https://codeberg.org/LengKundee/forgejo.git

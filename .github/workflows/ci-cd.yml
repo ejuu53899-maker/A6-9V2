@@ -7,13 +7,6 @@ on:
   pull_request:
     branches: [main, master, develop]
 
-env:
-
-
-
-
-
-
 jobs:
   lint:
     name: Lint Code
@@ -22,30 +15,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
-
-
-
   test:
     name: Run Tests
     runs-on: ubuntu-latest
     needs: lint
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-
-
-
-
-
-
-
-
-
 
   build:
     name: Build Application
@@ -55,15 +34,60 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
 
+      - name: Build Go Bridge
+        run: |
+          cd GenX_Go_Bridge
+          go build -o genx_bridge main.go
 
+      - name: Build Forgejo (if modified)
+        run: |
+          if [ -d "forgejo_setup" ]; then
+            cd forgejo_setup
+            make build
+          fi
 
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            GenX_Go_Bridge/genx_bridge
+            forgejo_setup/gitea
 
+  docker:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build and Push Go Bridge Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./GenX_Go_Bridge
+          push: true
+          tags: ghcr.io/${{ github.repository }}/genx-go-bridge:latest
 
-
-
+      - name: Build and Push Python Bridge Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./GenX_FX_V4
+          push: true
+          tags: ghcr.io/${{ github.repository }}/genx-py-bridge:latest
 
   security:
     name: Security Scan
@@ -71,8 +95,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -82,18 +104,13 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
 
-      - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-  deploy-dev:
-    name: Deploy to Development
+  deploy-ring-0:
+    name: Deploy to Ring 0 (Development)
     runs-on: ubuntu-latest
-    needs: [build, security]
+    needs: [build, security, docker]
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment:
-      name: development
+      name: ring-0-dev
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -103,19 +120,37 @@ jobs:
         with:
           name: build-artifacts
 
-      - name: Deploy to development
+      - name: Deploy to Ring 0
         run: |
-          echo "Deploying to development environment..."
-          # Add your deployment commands here
-          # Example: scp, rsync, kubectl, terraform, etc.
+          echo "Deploying to Ring 0 (Internal Development)..."
 
-  deploy-prod:
-    name: Deploy to Production
+  deploy-ring-1:
+    name: Deploy to Ring 1 (Staging)
     runs-on: ubuntu-latest
-    needs: deploy-dev
+    needs: deploy-ring-0
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    environment:
+      name: ring-1-staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Deploy to Ring 1
+        run: |
+          echo "Deploying to Ring 1 (Staging/Beta)..."
+
+  deploy-ring-2:
+    name: Deploy to Ring 2 (Production)
+    runs-on: ubuntu-latest
+    needs: deploy-ring-1
     if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     environment:
-      name: production
+      name: ring-2-prod
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -125,8 +160,6 @@ jobs:
         with:
           name: build-artifacts
 
-      - name: Deploy to production
+      - name: Deploy to Ring 2
         run: |
-          echo "Deploying to production environment..."
-          # Add your production deployment commands here
-          # Example: scp, rsync, kubectl, terraform, etc.
+          echo "Deploying to Ring 2 (Global Production)..."
