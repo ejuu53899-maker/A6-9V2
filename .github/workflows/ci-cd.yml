@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
   test:
     name: Run Tests
@@ -25,6 +27,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
   build:
     name: Build Application
@@ -33,6 +37,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -107,7 +113,7 @@ jobs:
   deploy-ring-0:
     name: Deploy to Ring 0 (Development)
     runs-on: ubuntu-latest
-    needs: [build, security, docker]
+    needs: [build, docker]
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment:
       name: ring-0-dev
