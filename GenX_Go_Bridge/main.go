@@ -74,7 +74,7 @@ func tradeHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	port := os.Getenv("BRIDGE_PORT")
 	if port == "" {
-		port = "8080"
+		port = "8000"
 	}
 
 	julesKey := os.Getenv("JULES_API_KEY_V4")

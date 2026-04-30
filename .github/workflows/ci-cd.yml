@@ -50,20 +50,12 @@ jobs:
           cd GenX_Go_Bridge
           go build -o genx_bridge main.go
 
-      - name: Build Forgejo (if modified)
-        run: |
-          if [ -d "forgejo_setup" ]; then
-            cd forgejo_setup
-            make build
-          fi
-
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
             GenX_Go_Bridge/genx_bridge
-            forgejo_setup/gitea
 
   docker:
     name: Build and Push Docker Images
@@ -73,6 +65,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+        env:
+          OWNER: "${{ github.repository_owner }}"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -86,14 +84,14 @@ jobs:
         with:
           context: ./GenX_Go_Bridge
           push: true
-          tags: ghcr.io/${{ github.repository }}/genx-go-bridge:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/genx-go-bridge:latest
 
       - name: Build and Push Python Bridge Image
         uses: docker/build-push-action@v5
         with:
           context: ./GenX_FX_V4
           push: true
-          tags: ghcr.io/${{ github.repository }}/genx-py-bridge:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/genx-py-bridge:latest
 
   security:
     name: Security Scan
@@ -113,7 +111,7 @@ jobs:
   deploy-ring-0:
     name: Deploy to Ring 0 (Development)
     runs-on: ubuntu-latest
-    needs: [build, docker]
+    needs: [build, security, docker]
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment:
       name: ring-0-dev
