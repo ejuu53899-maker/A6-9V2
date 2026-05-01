@@ -1,6 +1,6 @@
 services:
   forgejo:
-    image: forgejo/forgejo:latest
+    image: gitea/gitea:latest
     container_name: forgejo
     environment:
       - USER_UID=1000
