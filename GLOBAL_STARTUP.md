@@ -34,6 +34,13 @@ The system is optimized for devices with as little as 1GB RAM.
 2. **Set Credentials**: Export your keys globally or provide them to the `start_all.sh` script.
 3. **Bridge Communication**: The MQL5 EA connects to the bridge on **port 8000** by default. Ensure your firewall allows local traffic on this port.
 
+## 🌍 Live Production Environment
+
+- **Domain**: `exness-mt5real24.net`
+- **VPS IP**: `187.77.140.66` (Malaysia - Kuala Lumpur)
+- **Status**: DNS configured via `scripts/setup_hostinger_dns.py`
+- **Access**: Managed via `deploy_vps.sh` for automated production pushes.
+
 ## 🏗️ System Components
 - **Go Bridge**: `GenX_Go_Bridge/` (High Performance)
 - **Python Bridge**: `GenX_FX_V4/` (Flexible)
