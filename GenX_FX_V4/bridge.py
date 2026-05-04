@@ -110,7 +110,6 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(b'Invalid JSON')
 
     def _upload_to_gcs(self, data):
-        global gcs_bucket
         if not gcs_bucket:
             return
 
@@ -161,7 +160,6 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
         logging.info(f"📈 Performance - Account: {data.get('account')}, Equity: {data.get('equity')}, PnL: {data.get('pnl')}")
 
         # Store in Firestore
-        global db
         if db:
             try:
                 doc_ref = db.collection('performance_v4').document(str(data.get('account', 'unknown')))
@@ -172,7 +170,6 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
                 logging.error(f"Failed to log performance to Firestore: {e}")
 
     def handle_remote_control(self, data):
-        global operation_state
         new_status = data.get('command', '').upper()
         if new_status in ["START", "STOP", "PAUSE"]:
             operation_state["status"] = new_status
