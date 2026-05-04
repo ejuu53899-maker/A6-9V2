@@ -3,9 +3,9 @@ name: CI/CD Pipeline
 on:
   workflow_dispatch:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, develop, 'JULES_API_KEY_V4*']
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, master, develop, 'JULES_API_KEY_V4*']
 
 env:
 
@@ -21,6 +21,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cleanup orphaned gitlinks
+        run: |
+          # Remove 160000 entries that are not in .gitmodules to avoid checkout errors in CI
+          git ls-files -s | grep ^160000 | awk '{print $4}' | while read path; do
+            if ! grep -q "path = $path" .gitmodules; then
+              echo "Removing orphaned gitlink: $path"
+              git rm --cached "$path" || true
+            fi
+          done
 
 
 
@@ -130,3 +142,37 @@ jobs:
           echo "Deploying to production environment..."
           # Add your production deployment commands here
           # Example: scp, rsync, kubectl, terraform, etc.
+
+  push-to-performance:
+    name: Push to Performance Repo
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/JULES_API_KEY_V4')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Performance Repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_PUSH }}
+        run: |
+          git remote add performance https://x-access-token:${GITHUB_TOKEN}@github.com/meizhuxie4-spec/PERFORMANCE.git
+          git push performance HEAD:main --force
+
+  push-to-codeberg:
+    name: Push to Codeberg Repo
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/JULES_API_KEY_V4')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Codeberg Repository
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_API_KEY }}
+        run: |
+          git remote add codeberg https://x-access-token:${CODEBERG_TOKEN}@codeberg.org/LengKundee/forgejo.git
+          git push codeberg HEAD:main --force
