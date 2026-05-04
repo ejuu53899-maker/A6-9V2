@@ -8,11 +8,7 @@ on:
     branches: [main, master, develop]
 
 env:
-
-
-
-
-
+  PYTHON_VERSION: '3.12'
 
 jobs:
   lint:
@@ -22,30 +18,54 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Install Linting Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
 
-
+      - name: Run Flake8
+        run: |
+          flake8 GenX_FX_V4/bridge.py --count --select=E9,F63,F7,F82 --show-source --statistics
 
   test:
     name: Run Tests
     runs-on: ubuntu-latest
     needs: lint
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r GenX_FX_V4/requirements.txt
 
+      - name: Run Syntax Check
+        run: |
+          python3 -m py_compile GenX_FX_V4/bridge.py
 
-
-
-
-
-
-
+      - name: Run Integration Test (Mock)
+        run: |
+          export JULES_API_KEY_V4="TEST_KEY"
+          export GITHUB_TOKEN_PUSH="TEST_TOKEN"
+          # Mock Cloud credentials for CI
+          export FIREBASE_SERVICE_ACCOUNT_JSON=""
+          export GCS_BUCKET_NAME="mock-bucket"
+          python3 GenX_FX_V4/bridge.py &
+          BRIDGE_PID=$!
+          sleep 5
+          curl -s http://localhost:8000/remote/status | grep "START"
+          kill $BRIDGE_PID
 
   build:
     name: Build Application
@@ -55,15 +75,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Package Artifacts
+        run: |
+          mkdir -p dist/GenX_FX_V4
+          cp GenX_FX_V4/GenX_EA_V4.mq5 dist/GenX_FX_V4/
+          cp GenX_FX_V4/bridge.py dist/GenX_FX_V4/
+          cp GenX_FX_V4/startup.sh dist/GenX_FX_V4/
+          cp GenX_FX_V4/requirements.txt dist/GenX_FX_V4/
+          cp README.md dist/
+          tar -czf genx-fx-v4.tar.gz -C dist .
 
-
-
-
-
-
-
-
-
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: genx-fx-v4-build
+          path: genx-fx-v4.tar.gz
 
   security:
     name: Security Scan
@@ -71,8 +97,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -101,13 +125,13 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: genx-fx-v4-build
 
       - name: Deploy to development
         run: |
-          echo "Deploying to development environment..."
-          # Add your deployment commands here
-          # Example: scp, rsync, kubectl, terraform, etc.
+          echo "Deploying GenX FX V4 to development environment..."
+          tar -xzf genx-fx-v4.tar.gz
+          ls -R
 
   deploy-prod:
     name: Deploy to Production
@@ -123,10 +147,26 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: genx-fx-v4-build
 
       - name: Deploy to production
         run: |
-          echo "Deploying to production environment..."
-          # Add your production deployment commands here
-          # Example: scp, rsync, kubectl, terraform, etc.
+          echo "Deploying GenX FX V4 to production environment..."
+          tar -xzf genx-fx-v4.tar.gz
+          ls -R
+
+  deploy-firebase:
+    name: Deploy to Firebase
+    runs-on: ubuntu-latest
+    needs: [build, security]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@v11.16.0
+        with:
+          args: deploy --only firestore:rules,firestore:indexes
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
