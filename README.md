@@ -1,47 +1,129 @@
 # Knowledge Base
 - **NotebookLM**: [Access here](https://notebooklm.google.com/notebook/e8f4c29d-9aec-4d5f-8f51-2ca168687616)
 
-# A6-9V
+# GenX FX Trading System [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-## 📋 Description
+> A sophisticated trading automation framework integrating MQL5 Expert Advisors with Python for advanced analytics and execution.
 
-A unknown project.
+The GenX FX Trading System is a curated collection of tools and scripts designed for traders who want to combine the power of MetaTrader 5 with the flexibility of Python-based data processing and signal generation.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (V4)
 
 ### Prerequisites
 
-- See project-specific requirements
+- MetaTrader 5 (MT5) installed
+- Python 3.8+
+- `JULES_API_KEY_V4` (obtained from your dashboard)
+- `GITHUB_TOKEN_PUSH` (for secure synchronization)
+
+### Secret Environment Setup
+
+For enhanced security, you can use an environment file to manage your keys.
+1. Copy `GenX_FX_V4/.env.example` to `GenX_FX_V4/.env`.
+2. Fill in your `JULES_API_KEY_V4` and `GITHUB_TOKEN_PUSH`.
+3. The `startup.sh` script will automatically prioritize these variables.
 
 ### Installation
 
-```bash
-# Install dependencies based on project type
-```
+1. Clone this repository to your local machine.
+2. Copy `GenX_FX_V4/GenX_EA_V4.mq5` to your MT5 `MQL5/Experts` folder.
+3. Install Python dependencies:
+   ```bash
+   pip install -r GenX_FX_V4/requirements.txt
+   ```
 
 ### Running
 
-```bash
-# Run based on project type
-```
+1. Compile and attach the EA in MT5, providing both `JULES_API_KEY_V4` and `GITHUB_TOKEN_PUSH`.
+2. Start the Python bridge using the startup script:
+   ```bash
+   ./GenX_FX_V4/startup.sh "your_api_key_here" "your_github_token_here"
+   ```
 
 ## 📁 Project Structure
 
 ```
-A6-9V/
-
-
-
-
+GenX_FX/
+├── GenX_FX_V4/
+│   ├── GenX_EA_V4.mq5       # MQL5 Expert Advisor
+│   ├── bridge.py            # Python Bridge (HTTP Server)
+│   ├── startup.sh           # Easy Startup Script
+│   └── requirements.txt     # Python Dependencies
+├── Indexing-Workflow-controller/ # 🚀 Automated Signal Generation & Workflow Controller
+├── signal_output/          # 📈 Generated Trading Signals (Excel, CSV, JSON)
 ├── README.md
 └── ...
 ```
 
+## 🚀 Indexing Workflow Integration (V4)
+
+The system now features automated signal generation, an Excel-based dashboard, and **real-time performance monitoring**.
+
+### **Real-Time Performance Monitoring**
+
+Version 4 now tracks account performance metrics (balance, equity, pnl) and transmits them to the Python bridge for processing.
+- **Endpoint:** `/performance/update`
+- **Data:** Account number, balance, equity, and unrealized profit/loss.
+- **Frequency:** Sent on initialization and every 500 ticks.
+
+### **Remote Control Capabilities**
+
+The Python bridge now acts as a command center for the EA.
+- **POST `/remote/control`:** Send commands (`START`, `STOP`, `PAUSE`) to the bridge.
+- **GET `/remote/status`:** The EA periodically checks this endpoint to sync its operational state.
+- **State Persistence:** The bridge maintains the current status, allowing for remote intervention without restarting the EA.
+
+### **Getting Started with Signals**
+
+1. **Setup Environment:**
+   ```bash
+   pip install openpyxl pandas
+   ```
+2. **Generate Signals:**
+   ```bash
+   export PYTHONPATH=$PYTHONPATH:$(pwd)/Indexing-Workflow-controller/scripts/utils
+   python3 Indexing-Workflow-controller/scripts/utils/demo_excel_generator.py
+   ```
+3. **View Outputs:**
+   Check the `signal_output/` directory for the latest Excel dashboard and MT4/MT5 CSV signals.
+
+### **Active Trading Session Entry**
+
+To connect a remote MetaTrader 5 terminal to an active bridge session:
+1. Ensure your firewall allows inbound connections on the configured bridge port (default: 8000).
+2. In your MT5 Expert Advisor, set `BridgeURL` to the public IP or hostname of the bridge server (e.g., `http://your-server-ip:8000`).
+3. Ensure the `JULES_API_KEY_V4` and `GITHUB_TOKEN_PUSH` in MT5 match the session tokens.
+
+## 📈 Path to Real Performance
+
+Version 4 is now equipped with live analytics and insight reporting to drive real-world trading performance.
+
+### **Live Market Analysis**
+The Python bridge automatically calculates technical indicators for every symbol it receives:
+- **SMA-14:** Simple Moving Average to identify trend direction.
+- **RSI-14:** Relative Strength Index to identify overbought (>70) or oversold (<30) conditions.
+- **Insight Reporting:** The bridge returns these metrics to the EA, which logs them directly in the MT5 Experts tab.
+
+### **Achieving "Real Start"**
+To transition from demo to live performance:
+1. **Connect Real Data:** Replace the EA's data feed with a live broker account.
+2. **Refine Logic:** Update `bridge.py` with custom machine learning models or ensemble indicators.
+3. **Monitor PnL:** Use the `/performance/update` endpoint to track real-time equity growth.
+
 ## 🧪 Testing
 
-```bash
-# Run tests based on project type
-```
+The project includes a suite of automated tests to ensure bridge functionality and security.
+- **Python Bridge Syntax Check:** `python3 -m py_compile GenX_FX_V4/bridge.py`
+- **Integration Test:** Verified via GitHub Actions using mock authentication tokens.
+
+## 🚀 CI/CD & Deployment
+
+The system is equipped with a GitHub Actions pipeline (`.github/workflows/ci-cd.yml`) that automates:
+1. **Linting:** Checks Python code quality using Flake8.
+2. **Testing:** Runs syntax and integration tests in a virtual environment.
+3. **Security:** Performs filesystem vulnerability scans using Trivy.
+4. **Building:** Packages the EA and Bridge into a versioned `.tar.gz` artifact.
+5. **Deployment:** Automatically deploys to the `development` environment on every push to `main`. Production deployment is available via manual `workflow_dispatch`.
 
 ## 🏗️ Building
 
@@ -73,7 +155,9 @@ Follow project-specific style guidelines
 
 ## 📄 License
 
-See LICENSE file for details.
+[![CC0](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/cc-zero.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
+
+This project is licensed under the [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) (Public Domain Dedication).
 
 ## 👥 Authors
 
