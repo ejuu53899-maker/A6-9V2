@@ -135,7 +135,6 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
         logging.info(f"📈 Performance - Account: {data.get('account')}, Equity: {data.get('equity')}, PnL: {data.get('pnl')}")
 
     def handle_remote_control(self, data):
-        global operation_state
         new_status = data.get('command', '').upper()
         if new_status in ["START", "STOP", "PAUSE"]:
             operation_state["status"] = new_status
