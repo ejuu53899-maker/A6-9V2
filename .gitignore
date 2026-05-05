@@ -33,6 +33,7 @@ logs/
 .env
 .env.local
 .env.*.local
+GenX_FX_V4/.env
 
 # Testing
 coverage/
