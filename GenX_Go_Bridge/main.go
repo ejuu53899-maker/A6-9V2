@@ -71,6 +71,16 @@ func tradeHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func aiTradeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	log.Printf("AI Trade signal received from %s", r.RemoteAddr)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"status":"success","message":"AI trade signal processed"}`))
+}
+
 func main() {
 	port := os.Getenv("BRIDGE_PORT")
 	if port == "" {
