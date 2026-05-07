@@ -27,3 +27,16 @@ services:
       - POSTGRES_DB=forgejo
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+
+  bridge:
+    build:
+      context: ./GenX_Go_Bridge
+      dockerfile: Dockerfile
+    container_name: genx_bridge
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - forgejo
