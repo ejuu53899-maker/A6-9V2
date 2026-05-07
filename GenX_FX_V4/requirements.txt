@@ -1,0 +1,6 @@
+# Python dependencies for GenX FX Trading System V4
+# Minimal set for basic HTTP server (part of standard library)
+# Adding common libraries for trading logic (uncomment to install)
+# requests==2.31.0
+# pandas==2.2.0
+# numpy==1.26.4

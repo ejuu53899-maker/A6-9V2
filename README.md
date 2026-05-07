@@ -1,11 +1,21 @@
 # Knowledge Base
 - **NotebookLM**: [Access here](https://notebooklm.google.com/notebook/e8f4c29d-9aec-4d5f-8f51-2ca168687616)
 
-# A6-9V
+# GenX A6-9V Trading System
 
 ## 📋 Description
 
-A unknown project.
+Advanced Trading System integrating MQL5 Expert Advisors with High-Performance Go/Python Bridges and a robust 3-Ring Deployment Pipeline.
+
+## 🌟 Global Startup (All Devices & Collaborators)
+
+To synchronize and start the system on any device (including Mini PCs):
+
+```bash
+./start_all.sh [API_KEY] [GH_TOKEN] [go|python]
+```
+
+For detailed onboarding, see [GLOBAL_STARTUP.md](./GLOBAL_STARTUP.md).
 
 ## 🚀 Quick Start
 
