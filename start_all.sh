@@ -14,10 +14,20 @@ if [ "$TOTAL_MEM" -lt 1000 ]; then
 fi
 
 # Load or Request Credentials
-# 1. Check for .env file
-if [ -f "GenX_FX_V4/.env" ]; then
-    echo "[INFO] Loading credentials from GenX_FX_V4/.env"
-    export $(grep -v '^#' GenX_FX_V4/.env | xargs)
+ENV_FILE="GenX_FX_V4/.env"
+
+# Simple argument parsing for --env flag
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --env) ENV_FILE="$2"; shift ;;
+        *) break ;;
+    esac
+    shift
+done
+
+if [ -f "$ENV_FILE" ]; then
+    echo "[INFO] Loading credentials from $ENV_FILE"
+    export $(grep -v '^#' "$ENV_FILE" | xargs)
 fi
 
 JULES_KEY="${1:-$JULES_API_KEY_V4}"
