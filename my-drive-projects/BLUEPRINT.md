@@ -37,7 +37,10 @@ The system uses multiple tiers of authentication:
 ## 💻 Environment Configuration
 
 *   **Device Name**: `WIN-DNGG6AODSKQ`
-*   **Platform**: Windows 11 with WSL2 (Ubuntu/Debian)
+*   **Platform**: Windows 11 with WSL2 (Local Bridge)
+*   **Trading Platform**: MetaTrader 5 (MT5)
+*   **Broker**: FxPro (Real MT5 Standard Account)
+*   **Execution Environment**: MetaTrader VPS (Built-in)
 *   **Orchestration**: `start_all.sh` provides unified initialization for both the Trading Bridge and infrastructure.
 
 ## 📡 Data Flow Mapping
