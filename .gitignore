@@ -46,3 +46,4 @@ htmlcov/
 *.dll
 *.so
 *.dylib
+*.env*

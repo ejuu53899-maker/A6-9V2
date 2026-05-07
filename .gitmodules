@@ -1,0 +1,9 @@
+[submodule "performance_repo"]
+	path = performance_repo
+	url = https://github.com/meizhuxie4-spec/PERFORMANCE
+[submodule "forgejo_repo"]
+	path = forgejo_repo
+	url = https://codeberg.org/LengKundee/forgejo.git
+[submodule "desktop_mode_repo"]
+	path = desktop_mode_repo
+	url = https://codeberg.org/LengKundee/all-in-one-desktop-mode-.git
