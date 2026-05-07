@@ -14,9 +14,15 @@ if [ "$TOTAL_MEM" -lt 1000 ]; then
 fi
 
 # Load or Request Credentials
+# 1. Check for .env file
+if [ -f "GenX_FX_V4/.env" ]; then
+    echo "[INFO] Loading credentials from GenX_FX_V4/.env"
+    export $(grep -v '^#' GenX_FX_V4/.env | xargs)
+fi
+
 JULES_KEY="${1:-$JULES_API_KEY_V4}"
 GITHUB_TOKEN="${2:-$GITHUB_TOKEN_PUSH}"
-BRIDGE_TYPE="${3:-go}"
+BRIDGE_TYPE="${3:-python}"
 
 if [ -z "$JULES_KEY" ] || [ -z "$GITHUB_TOKEN" ]; then
     echo "[INFO] Tokens not provided. Please enter them below."
