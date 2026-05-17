@@ -12,19 +12,16 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length)
 
-        # Basic routing
-        if self.path == '/ai-trade':
-            self.handle_ai_trade(post_data)
-            return
-
         # Authentication headers
         auth_header = self.headers.get('Authorization', '')
         github_header = self.headers.get('X-GitHub-Token', '')
 
+        # Routing
         if self.path == '/ai-trade':
             self.handle_ai_trade(post_data, auth_header)
             return
 
+        # Default EA Signal Handling
         if not self.validate_auth(auth_header):
             logging.warning("Unauthorized: JULES_API_KEY_V4 mismatch.")
             self.send_response(401)
@@ -59,11 +56,11 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
             os.environ.get('AI_API_KEY_3')
         ]
 
-        # Expecting Bearer token for AI agent as well
-        provided_key = auth_header.replace('Bearer ', '')
+        # Expecting Bearer token for AI agent
+        provided_key = auth_header.replace('Bearer ', '') if auth_header.startswith('Bearer ') else auth_header
 
-        if provided_key not in ai_keys or not provided_key:
-            logging.warning(f"Unauthorized AI Trade attempt with key: {provided_key[:5]}...")
+        if not provided_key or (provided_key not in ai_keys and provided_key != os.environ.get('JULES_API_KEY_V4')):
+            logging.warning(f"Unauthorized AI Trade attempt with key: {provided_key[:5] if provided_key else 'NONE'}...")
             self.send_response(401)
             self.end_headers()
             self.wfile.write(b'Unauthorized AI Agent')
@@ -78,23 +75,16 @@ class TradeRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             response = {
-                "status": "AI_TRADE_RECEIVED",
+                "status": "success",
+                "message": "AI trade signal processed",
                 "device": device_id,
-                "intent": data
+                "received": data
             }
             self.wfile.write(json.dumps(response).encode('utf-8'))
         except json.JSONDecodeError:
             self.send_response(400)
             self.end_headers()
             self.wfile.write(b'Invalid AI Trade JSON')
-
-    def handle_ai_trade(self, post_data):
-        # AI trade execution logic placeholder
-        logging.info(f"AI Trade execution request: {post_data.decode('utf-8')}")
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-        self.wfile.write(b'{"status":"success","message":"AI trade signal processed"}')
 
     def validate_auth(self, auth_header):
         expected_key = f"Bearer {os.environ.get('JULES_API_KEY_V4', 'JULES_API_KEY_V4_PLACEHOLDER')}"
