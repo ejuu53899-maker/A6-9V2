@@ -34,3 +34,13 @@ jobs:
             See CHANGELOG.md for details.
           draft: false
           prerelease: false
+
+      - name: Go Release Binaries
+        uses: wangyoucao577/go-release-action@v1.55
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: linux,windows,darwin
+          goarch: amd64,arm64
+          project_path: "./GenX_Go_Bridge"
+          binary_name: "genx_bridge"
+          extra_files: LICENSE README.md
