@@ -40,3 +40,17 @@ services:
       - .env
     depends_on:
       - forgejo
+
+  desktop-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile.desktop
+    container_name: genx_desktop_platform
+    restart: always
+    ports:
+      - "8080:8000"
+      - "5555:5555"
+    env_file:
+      - .env
+    depends_on:
+      - db

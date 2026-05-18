@@ -1,0 +1,3 @@
+[submodule "desktop_mode_repo"]
+	path = desktop_mode_repo
+	url = https://codeberg.org/LengKundee/all-in-one-desktop-mode-.git

@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies from desktop_mode_repo
+COPY desktop_mode_repo/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy everything from desktop_mode_repo
+COPY desktop_mode_repo/ .
+
+# Expose Bridge and API ports
+EXPOSE 5555 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Start the combined bridge and API service
+CMD ["python", "main.py"]

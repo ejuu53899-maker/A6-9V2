@@ -54,6 +54,19 @@ fi
 
 # 2. Start the Selected Bridge
 echo "[2/2] Starting Trading Bridge ($BRIDGE_TYPE)..."
+
+if [ "$BRIDGE_TYPE" == "desktop" ]; then
+    echo "Launching All-in-One Desktop Platform..."
+    # Check for database in submodule
+    if [ ! -f "desktop_mode_repo/genxdb_fx.db" ]; then
+        echo "[INFO] Initializing desktop platform database..."
+        cd desktop_mode_repo && python3 scripts/setup/setup_database.py && cd ..
+    fi
+    docker compose up -d desktop-platform
+    echo "Desktop platform is running at http://localhost:8080"
+    exit 0
+fi
+
 if [ "$BRIDGE_TYPE" == "go" ]; then
     echo "Launching High-Performance Go Bridge..."
     if [ -f "./GenX_Go_Bridge/main.go" ]; then
