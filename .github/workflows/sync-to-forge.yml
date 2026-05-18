@@ -1,0 +1,22 @@
+name: Sync to Next-Forge
+
+on:
+  push:
+    branches: [main, master, develop, 'feature/*']
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Next-Forge
+        env:
+          FORGE_TOKEN: ${{ secrets.FORGE_ACCESS_TOKEN }}
+        run: |
+          git remote add next-forge https://forge.mql5.io/LengKundee/mql5.git
+          git push next-forge HEAD:refs/heads/${GITHUB_REF_NAME} --force
