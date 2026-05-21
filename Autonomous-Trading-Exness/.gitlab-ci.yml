@@ -1,0 +1,59 @@
+stages:
+  - validate
+  - test
+  - build
+  - deploy
+  - security
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+validate-repo:
+  stage: validate
+  image: python:3.10-slim
+  script:
+    - python3 scripts/ci_validate_repo.py
+  only:
+    - main
+    - merge_requests
+
+unit-tests:
+  stage: test
+  image: python:3.10-slim
+  script:
+    - python3 scripts/test_automation.py
+  only:
+    - main
+    - merge_requests
+
+build-mql5:
+  stage: build
+  image: ubuntu:22.04
+  script:
+    - apt-get update && apt-get install -y zip
+    - bash scripts/package_mt5.sh
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  only:
+    - main
+
+# GitLab Duo / AI Integration Job
+# This job can be used to run AI-driven market research or code analysis
+gitlab-duo-analysis:
+  stage: build
+  image: python:3.10-slim
+  script:
+    - pip install yfinance
+    - python3 scripts/market_research.py
+    - echo "GitLab Duo features enabled for project"
+  allow_failure: true
+  only:
+    - schedules
+    - web

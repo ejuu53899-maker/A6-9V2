@@ -1,0 +1,53 @@
+dist/
+
+# MetaTrader 5 compiled artifacts
+*.ex5
+
+# Editor/OS clutter
+*.mq5~
+*.mqh~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Local env files (secrets)
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dev Container (keep config, ignore cache)
+.devcontainer/.cache/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Personal vault - sensitive credentials
+config/vault.json
+data/
+
+# Jules CLI temporary files
+/tmp/jules_tmp/
+.jules/*.log
+.jules/cache/

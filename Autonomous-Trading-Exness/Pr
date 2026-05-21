@@ -1,0 +1,2 @@
+#!/bin/bash
+python3 scripts/pr_tool.py "$@"

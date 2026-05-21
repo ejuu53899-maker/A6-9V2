@@ -1,0 +1,24 @@
+{
+  "requested_symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCHF",
+    "AUDUSD",
+    "USDCAD",
+    "NZDUSD",
+    "EURGBP",
+    "EURJPY",
+    "GBPJPY",
+    "BTCUSD",
+    "XAUUSD",
+    "BTCXAU",
+    "AUGBTC",
+    "AUGXAU"
+  ],
+  "configuration": {
+    "magic_number": 169926536,
+    "platform": "MetaTrader 5",
+    "broker": "Exness"
+  }
+}

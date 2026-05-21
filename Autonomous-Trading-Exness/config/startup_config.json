@@ -1,0 +1,21 @@
+{
+    "symbols": [
+        "EURUSD",
+        "GBPUSD",
+        "USDJPY",
+        "USDCHF",
+        "AUDUSD",
+        "USDCAD",
+        "NZDUSD",
+        "EURGBP",
+        "EURJPY",
+        "GBPJPY",
+        "BTCUSD",
+        "XAUUSD",
+        "BTCXAU",
+        "AUGBTC",
+        "AUGXAU"
+    ],
+    "auto_trading": true,
+    "magic_number": 169926536
+}

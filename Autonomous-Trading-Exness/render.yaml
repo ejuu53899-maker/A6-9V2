@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: zolo-bridge
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/start_trading.py
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: BRIDGE_API_KEY
+        sync: false # Set this in Render Dashboard
+      - key: BYBIT_API_KEY
+        sync: false
+      - key: BYBIT_SECRET_KEY
+        sync: false
+      - key: MT5_ACCOUNT_ID
+        sync: false
+      - key: MT5_PASSWORD
+        sync: false
+      - key: MT5_SERVER
+        sync: false

@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Config (sensitive)
+config/vault.json
+.env
+.env.*
+
+# Build artifacts
+dist/
+build/
+*.ex5
+
+# Documentation
+*.md
+!README.md
+
+# Dev container
+.devcontainer/
+
+# Docker
+docker-compose*.yml
+Dockerfile.dev
+
+# Temporary files
+*.tmp
+*.temp
+.cache

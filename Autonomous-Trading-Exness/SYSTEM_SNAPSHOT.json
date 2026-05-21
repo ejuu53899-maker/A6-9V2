@@ -1,0 +1,25 @@
+{
+    "system": {
+        "os": "posix",
+        "cwd": "/app",
+        "python_version": "3.12.13 (main, Mar  6 2026, 16:37:31) [GCC 13.3.0]"
+    },
+    "security_profiles": {
+        "MT5_ACCOUNT_ID": "YO****ID",
+        "LOGIN_LIVE_NUMBER": "YO****ID",
+        "TELEGRAM_BOT_TOKEN": "YO****EN",
+        "BYBIT_API_KEY": "YO****EY"
+    },
+    "infrastructure": {
+        "port": "8080",
+        "bridge_url": "http://localhost:8080"
+    },
+    "vision_config": {
+        "enabled_classes": [
+            "trend",
+            "breakout",
+            "smc"
+        ],
+        "threshold": 0.75
+    }
+}
